@@ -1,0 +1,82 @@
+Public Function CPFValido(CPF As String) As Boolean
+    
+    'A função recebe um número de CPF já com máscara em forma de string.
+
+    Dim CPFSemMascara As String
+    Dim Digito As Integer
+    Dim Soma As Integer
+    Dim Resto As Integer
+    
+    '1. Checa se a string contém a quantidade certa de dígitos.
+    'Nesse caso, 11 números + 3 separadores (pontos e traços) = 14.
+    If Len(CPF) < 14 Then
+        CPFValido = False
+        Exit Function
+    End If
+    
+    '2. Remove a máscara da string.
+    With CPFSemMascara
+        .Value = Replace(.Value, ".", "")
+        .Value = Replace(.Value, "-", "")
+    End With
+    
+    '3. Checa se é um dos números inválidos conhecidos.
+    'No CPF, números repetidos como 111.111.111-11 são inválidos,
+    'mas são aceitos pelo algoritmo e precisam ser detectados.
+    Digito = CInt(Mid(CPF, 1, 1))
+    Soma = 0
+    
+    For p = 1 To 11
+        Soma = Soma + CInt(Mid(CPFSemMascara, p, 1))
+    Next
+    
+    'Basicamente, se a soma dos dígitos for igual
+    'ao primeiro dígito vezes 11, sabe-se que todos
+    'os dígitos são iguais e o CPF é dado como inválido.
+    If Soma = (Digito * 11) Then
+        CPFValido = False
+        Exit Function
+    End If
+    
+    '4. Valida o primeiro número dos dígitos verificadores.
+    Digito = CInt(Mid(CPFSemMascara, 10, 1))
+    Soma = 0
+    
+    For p = 1 To 9
+        Soma = Soma + (CInt(Mid(CPFSemMascara, p, 1)) * (11 - p))
+    Next
+    
+    Resto = (Soma * 10) Mod 11
+    
+    If Resto = 10 Or Resto = 11 Then
+        Resto = 0
+    End If
+    
+    If Resto <> Digito Then
+        CPFValido = False
+        Exit Function
+    End If
+    
+    '5. Depois valida o segundo número do digito verificador.
+    Digito = CInt(Mid(CPFSemMascara, 11, 1))
+    Soma = 0
+    
+    For p = 1 To 10
+        Soma = Soma + (CInt(Mid(CPFSemMascara, p, 1)) * (12 - p))
+    Next
+    
+    Resto = (Soma * 10) Mod 11
+    
+    If Resto = 10 Or Resto = 11 Then
+        Resto = 0
+    End If
+    
+    If Resto <> Digito Then
+        CPFValido = False
+        Exit Function
+    End If
+    
+    'Se nada disso falhar, CPFValido é true.
+    CPFValido = True
+
+End Function
